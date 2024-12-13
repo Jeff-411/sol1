@@ -1,5 +1,11 @@
+// outlook.live.com.js
+// This file functions as the "main.js" script for
+// the "Witchcraft: JS/CSS injector" Chrome extension, which
+// uses the `// @include <path>` syntax to handle
+// the modules in the `./script/` directory.
+
 // IMPORTANT:
-// Do not delete or uncomment `@include` statements
+// Do not delete or uncomment `@include` statements!
 // @include script/ui/ui.js
 // @include script/utilities/index_utilities.js
 // @include script/paneToggles/init_paneToggles.js
@@ -7,22 +13,34 @@
 // @include script/store/init_storage.js
 
 const init = () => {
-  init_paneToggles() // Add the Toggle triggers to the DOM, then
-  hideAllTargets() // hide all the Toggle targets.
-  init_features()
-  init_storage()
+  try {
+    init_paneToggles() // Add the Toggle triggers to the DOM, then
+    hideAllTargets() // hide all the Toggle targets.
+    init_features()
+    init_storage()
+    console.log('Initialization complete.')
+  } catch (error) {
+    console.error('Initialization failed:', error)
+  }
 }
 
-const isloaded_site = setInterval(() => {
-  let siteHeader = document.querySelector(SITE.SITE_HEADER)
-  let ribbon = document.querySelector(SITE.RIBBON)
-  let navpane = document.querySelector(SITE.NAVPANE)
-  let leftRail = document.querySelector(SITE.LEFT_RAIL)
+const observeDOM = callback => {
+  const observer = new MutationObserver((mutations, obs) => {
+    const siteHeader = document.querySelector(SITE.SITE_HEADER)
+    const ribbon = document.querySelector(SITE.RIBBON)
+    const navpane = document.querySelector(SITE.NAVPANE)
+    const leftRail = document.querySelector(SITE.LEFT_RAIL)
 
-  if (siteHeader && ribbon && navpane && leftRail) {
-    clearInterval(isloaded_site)
-    init()
-  }
-  // debug
-  else console.log(`isloaded_site => Trying again...`)
-}, 100)
+    if (siteHeader && ribbon && navpane && leftRail) {
+      obs.disconnect()
+      callback()
+    }
+  })
+
+  observer.observe(document, {
+    childList: true,
+    subtree: true,
+  })
+}
+
+observeDOM(init)
